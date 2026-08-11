@@ -203,21 +203,36 @@ def main() -> None:
     (docs / ".nojekyll").write_bytes(b"")
     (ROOT / ".nojekyll").write_bytes(b"")
     shutil.copytree(repo, docs / "fdroid" / "repo")
-    html = (ROOT / "fdroid/site-index.html").read_text(encoding="utf-8").replace(
-        "@FINGERPRINT@", fp
-    )
-    (docs / "index.html").write_bytes(html.replace("\r\n", "\n").encode("utf-8"))
     repo_url = (
         f"https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint={fp}"
     )
-    (docs / "add-repo.txt").write_bytes((repo_url + "\n").encode("ascii"))
+    qr_data_uri = "data:image/png;base64,"
     try:
+        import base64
+        import io
+
         import qrcode
 
-        qrcode.make(repo_url, box_size=8, border=2).save(docs / "fdroid-repo-qr.png")
-        print("QR", docs / "fdroid-repo-qr.png")
+        buf = io.BytesIO()
+        qrcode.make(repo_url, box_size=10, border=2).convert("RGB").save(
+            buf, format="PNG"
+        )
+        png = buf.getvalue()
+        (docs / "fdroid-repo-qr.png").write_bytes(png)
+        qr_data_uri += base64.b64encode(png).decode("ascii")
+        print("QR embedded in index.html +", docs / "fdroid-repo-qr.png")
     except Exception as exc:  # noqa: BLE001
         print("QR skipped:", exc)
+        qr_data_uri = "fdroid-repo-qr.png"
+
+    html = (
+        (ROOT / "fdroid/site-index.html")
+        .read_text(encoding="utf-8")
+        .replace("@FINGERPRINT@", fp)
+        .replace("@QR_DATA_URI@", qr_data_uri)
+    )
+    (docs / "index.html").write_bytes(html.replace("\r\n", "\n").encode("utf-8"))
+    (docs / "add-repo.txt").write_bytes((repo_url + "\n").encode("ascii"))
     (SECRETS / "fingerprint.txt").write_bytes(fp.encode("ascii") + b"\n")
 
     print("Published to", docs)

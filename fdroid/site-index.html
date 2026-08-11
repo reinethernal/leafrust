@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LeafRust F-Droid repository</title>
+  <title>LeafRust — репозиторий F-Droid</title>
   <style>
     :root { color-scheme: light; --bg: #f3f0e8; --ink: #1a2e1f; --accent: #2f6b3c; --rust: #b85a2a; }
     body { font-family: Georgia, "Times New Roman", serif; margin: 0; background: linear-gradient(160deg, #f3f0e8, #e4ebe3); color: var(--ink); }
@@ -14,33 +14,26 @@
     code, .url { word-break: break-all; background: #fff8; padding: 0.15rem 0.35rem; border-radius: 4px; font-family: ui-monospace, Consolas, monospace; font-size: 0.9rem; }
     ol { line-height: 1.55; padding-left: 1.25rem; }
     .box { background: #fff9; border: 1px solid #2f6b3c33; border-radius: 8px; padding: 1rem 1.1rem; margin: 1.25rem 0; }
-    .qr { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-align: center; }
-    .qr img { width: min(14rem, 70vw); height: auto; background: #fff; padding: 0.75rem; border-radius: 8px; border: 1px solid #2f6b3c33; }
-    .hint { font-size: 0.95rem; opacity: 0.9; margin: 0; }
+    .qr { display: flex; flex-direction: column; align-items: center; gap: 0.85rem; text-align: center; }
+    .qr img { width: min(18rem, 80vw); height: auto; background: #fff; padding: 0.85rem; border-radius: 8px; border: 1px solid #2f6b3c33; image-rendering: pixelated; }
+    .hint { font-size: 0.95rem; opacity: 0.9; margin: 0; max-width: 22rem; }
   </style>
 </head>
 <body>
   <main>
     <h1>LeafRust</h1>
     <p class="sub">Сторонний репозиторий F-Droid</p>
-    <p>Добавьте репозиторий в приложение F-Droid, чтобы установить и обновлять LeafRust.</p>
 
     <div class="box qr">
-      <strong>QR для добавления репозитория</strong>
-      <img src="fdroid-repo-qr.png" width="280" height="280" alt="QR code: F-Droid repository URL with fingerprint" />
-      <p class="hint">F-Droid → Настройки → Репозитории → сканер / «+» → отсканируйте QR</p>
+      <strong>Отсканируйте QR в F-Droid</strong>
+      <img src="@QR_DATA_URI@" width="320" height="320" alt="QR: добавить репозиторий LeafRust в F-Droid" />
+      <p class="hint">F-Droid → Настройки → Репозитории → значок сканера → наведите камеру на этот QR</p>
     </div>
 
     <div class="box">
-      <strong>URL репозитория</strong><br />
+      <strong>Или вставьте URL</strong><br />
       <span class="url">https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=@FINGERPRINT@</span>
     </div>
-    <ol>
-      <li>Удалите прошлую запись LeafRust / leafrust, если она есть</li>
-      <li>Настройки → Репозитории → <strong>+</strong> или сканер QR</li>
-      <li>Вставьте URL выше целиком или отсканируйте QR</li>
-      <li>Включите репозиторий и найдите <strong>LeafRust</strong></li>
-    </ol>
     <p>Исходники: <a href="https://github.com/reinethernal/leafrust">github.com/reinethernal/leafrust</a></p>
   </main>
 </body>
