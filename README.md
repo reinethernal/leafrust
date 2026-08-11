@@ -49,17 +49,23 @@ cd android
 
 ## Модель
 
-Основа: [PlantAi](https://github.com/Nishant1998/PlantAi) — ResNet-18 на PlantVillage (**39 классов**, включая Background), TFLite.
+Основа: [PlantAi](https://github.com/Nishant1998/PlantAi) / PlantVillage (**39 классов**, включая Background), TFLite.
 
-При запуске веса (~11 МБ) берутся из assets или скачиваются.  
-Повторная загрузка — **Ещё → Обновить модель**.
+- В APK веса лежат в assets (офлайн).
+- Обновления качаются с CDN репозитория:  
+  `https://reinethernal.github.io/leafrust/docs/models/`  
+  (манифест `model_manifest.json` + `.tflite`). Кнопка **Ещё → Обновить модель**.
 
-Обучение своей модели:
+Датасет и дообучение: [`scripts/DATASETS.md`](scripts/DATASETS.md)
 
 ```bash
 cd scripts
 pip install -r requirements-train.txt
-python train_mobilenet.py --data /path/to/PlantVillage --out ../android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+python download_plantvillage.py --out ../data/plantvillage
+python train_mobilenet.py --data ../data/plantvillage --epochs 8 \
+  --out ../android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+python publish_model.py
+git add docs/models android/app/src/main/assets/models && git commit -m "Update model" && git push
 ```
 
 ## Разрешения

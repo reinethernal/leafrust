@@ -1,14 +1,11 @@
 # Model assets for LeafRust
 #
-# Bundled: PlantAi ResNet-18 TFLite (PlantVillage, 39 classes)
-# Source: https://github.com/Nishant1998/PlantAi
-#   plantvillage_mobilenet.tflite  (~11 MB)
-#   labels.txt                     (39 lines, index 4 = Background)
+# Bundled + CDN: plantvillage_mobilenet.tflite + labels.txt
+# Published at: https://reinethernal.github.io/leafrust/docs/models/
+# Manifest:     model_manifest.json (version + sha256)
 #
-# Dataset: PlantVillage (Mohanty et al.). Weights are redistributed for
-# on-device inference. F-Droid lists AntiFeature NonFreeAssets because the
-# .tflite file is a prebuilt binary, not rebuilt from training scripts
-# during the F-Droid recipe. See NOTICE and FDROID.md.
+# Dataset / training: ../../../../scripts/DATASETS.md
+# Source lineage: PlantAi / PlantVillage (Mohanty et al.)
 #
-# On launch the app can also download/update from:
-#   https://raw.githubusercontent.com/Nishant1998/PlantAi/master/model/model.tflite
+# App update path: ModelDownloader reads the manifest and downloads
+# newer weights after you run: python scripts/publish_model.py && git push

@@ -6,6 +6,7 @@ venv/
 # Keep the on-device model that ships in the APK / F-Droid build
 *.tflite
 !android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+!docs/models/plantvillage_mobilenet.tflite
 !mobile/models/README.md
 !android/app/src/main/assets/models/README.md
 
@@ -18,6 +19,9 @@ android/.idea/
 mobile/node_modules/
 mobile/.expo/
 mobile/dist/
+
+data/
+docs/models/*.tflite.part
 
 .build-tools/
 .secrets/

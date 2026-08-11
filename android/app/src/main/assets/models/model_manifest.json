@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "versionName": "1.0.0",
+  "model": "plantvillage_mobilenet.tflite",
+  "labels": "labels.txt",
+  "sha256": "b474111e96743f83427660313c1efd05520a0b6b647fcde5b4b4638d2a37b420",
+  "size": 11285824,
+  "minAppVersionCode": 1,
+  "updatedAt": "2026-08-11T07:45:09.483901+00:00",
+  "urls": {
+    "model": [
+      "https://reinethernal.github.io/leafrust/docs/models/plantvillage_mobilenet.tflite",
+      "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/plantvillage_mobilenet.tflite"
+    ],
+    "labels": [
+      "https://reinethernal.github.io/leafrust/docs/models/labels.txt",
+      "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/labels.txt"
+    ],
+    "manifest": [
+      "https://reinethernal.github.io/leafrust/docs/models/model_manifest.json",
+      "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/model_manifest.json"
+    ]
+  }
+}
