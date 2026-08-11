@@ -1,0 +1,9 @@
+LeafRust is a free and open-source Android app that analyzes a photo of a plant leaf on your device.
+
+• Take a photo or pick from the gallery
+• Align the leaf in a frame (pan, zoom, rotate)
+• Estimate disease and damage percentage with an on-device TensorFlow Lite model
+• Read symptoms and treatment tips from an offline plant/disease knowledge base
+• Keep a local history of inspections and share results via the Android share sheet
+
+No accounts, ads, or analytics. Photos stay on your phone unless you share them. Internet access is only used to optionally download or refresh the model.

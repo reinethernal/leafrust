@@ -1,0 +1,88 @@
+# LeafRust
+
+Нативное Android-приложение на **Kotlin + Jetpack Compose**: фото листа → локальный ИИ (болезнь + % поражения) → таблица осмотров → отправка результатов.
+
+## Возможности
+
+- Съёмка / галерея с подгонкой листа в рамку
+- Автоопределение: культуры, ягоды, деревья, кустарники, цветы, травы, тропические, комнатные, суккуленты, папоротники, лианы
+- **Офлайн-база** растений и болезней (симптомы + лечение) в SQLite
+- Оценка % поражения, история осмотров, Share / CSV
+
+## Структура
+
+```
+leaf/
+  android/     # основное приложение (Kotlin)
+  mobile/      # предыдущий Expo-прототип (архив)
+  scripts/     # обучение модели + сборка базы знаний
+```
+
+## Сборка
+
+Нужны **Android Studio Ladybug+**, JDK 17 и Android SDK.
+
+1. (Опционально) пересобрать базу знаний:
+   ```bash
+   python scripts/build_plant_kb.py
+   # → android/app/src/main/assets/kb/plants_diseases.sqlite
+   ```
+2. Откройте папку `android/` в Android Studio → Sync → Run.
+
+Из терминала:
+
+```bash
+cd android
+./gradlew :app:assembleDebug
+# APK: app/build/outputs/apk/debug/app-debug.apk
+```
+
+## База знаний
+
+Файл `android/app/src/main/assets/kb/plants_diseases.sqlite` содержит:
+- растения и категории;
+- типы болезней;
+- связки растение–болезнь с симптомами и лечением (RU);
+- `class_map` для лейблов PlantVillage и ornamental-ключей.
+
+При анализе тексты симптомов/лечения подставляются из базы по `classId`.
+
+## Модель
+
+Основа: [PlantAi](https://github.com/Nishant1998/PlantAi) — ResNet-18 на PlantVillage (**39 классов**, включая Background), TFLite.
+
+При запуске веса (~11 МБ) берутся из assets или скачиваются.  
+Повторная загрузка — **Ещё → Обновить модель**.
+
+Обучение своей модели:
+
+```bash
+cd scripts
+pip install -r requirements-train.txt
+python train_mobilenet.py --data /path/to/PlantVillage --out ../android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+```
+
+## Разрешения
+
+- Камера — съёмка листа
+- Галерея — выбор фото
+- Интернет — автоскачивание модели
+
+## F-Droid
+
+Приложение подготовлено к публикации в F-Droid (Apache-2.0, без проприетарных SDK).
+
+- Чеклист и инструкция: [`FDROID.md`](FDROID.md)
+- Шаблон рецепта: [`metadata/com.leafrust.yml`](metadata/com.leafrust.yml)
+- Тексты магазина: [`fastlane/metadata/android/`](fastlane/metadata/android/)
+- Лицензия / атрибуция: [`LICENSE`](LICENSE), [`NOTICE`](NOTICE)
+
+Локальная unsigned release-сборка (как у F-Droid):
+
+```bash
+cd android
+./gradlew :app:assembleRelease
+# app/build/outputs/apk/release/app-release-unsigned.apk
+```
+
+Перед подачей в [fdroiddata](https://gitlab.com/fdroid/fdroiddata): запушить на https://github.com/reinethernal/leafrust, тег `v1.0.0`, добавить скриншоты в fastlane.

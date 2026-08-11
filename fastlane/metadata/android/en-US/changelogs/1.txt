@@ -1,0 +1,7 @@
+Initial F-Droid release.
+
+• On-device leaf disease analysis (PlantVillage TFLite)
+• Offline plant/disease knowledge base with treatment tips
+• Camera grid, gallery import, align/crop
+• Local inspection history and share sheet export
+• No ads, no tracking

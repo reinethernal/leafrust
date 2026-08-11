@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Keep the on-device model that ships in the APK / F-Droid build
+*.tflite
+!android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+!mobile/models/README.md
+!android/app/src/main/assets/models/README.md
+
+android/.gradle/
+android/local.properties
+android/**/build/
+android/*.iml
+android/.idea/
+
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+
+.build-tools/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Local SDK / JDK installs
+.build-tools/
+

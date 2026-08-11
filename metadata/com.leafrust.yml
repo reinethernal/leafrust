@@ -1,0 +1,69 @@
+Categories:
+  - Science & Education
+  - Multimedia
+
+License: Apache-2.0
+
+AuthorName: LeafRust contributors
+
+SourceCode: https://github.com/reinethernal/leafrust
+IssueTracker: https://github.com/reinethernal/leafrust/issues
+Changelog: https://github.com/reinethernal/leafrust/releases
+
+AutoName: LeafRust
+
+Summary: On-device leaf disease check with treatment tips
+Description: |-
+    LeafRust helps you photograph a plant leaf and estimate disease and
+    damage percentage entirely on the device.
+
+    Features:
+
+    * Camera with alignment grid and crop (pan / zoom / rotate)
+    * On-device TensorFlow Lite model (PlantVillage crops)
+    * Offline knowledge base of plants and diseases with RU tips
+    * Local inspection history (Room) and Android share sheet export
+
+    No accounts, ads, or analytics. Internet permission is only used to
+    optionally download or refresh the model weights.
+
+RepoType: git
+# Same URL as SourceCode
+Repo: https://github.com/reinethernal/leafrust.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 1
+    commit: v1.0.0
+    subdir: android
+    sudo:
+      - apt-get update || apt-get update
+      - apt-get install -y openjdk-17-jdk-headless
+      - update-java-alternatives --set java-1.17.0-openjdk-amd64 || true
+    gradle:
+      - yes
+    # Unsigned release APK; F-Droid signs with its own key
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scandelete:
+      - mobile
+      - .build-tools
+      - LeafRust-debug.apk
+    rm:
+      - mobile
+      - .build-tools
+      - LeafRust-debug.apk
+
+# Prebuilt neural-net weights (not rebuilt during the F-Droid recipe)
+AntiFeatures:
+  - NonFreeAssets
+
+# Optional network for model update (not required when weights are bundled)
+# AntiFeatures:
+#   - NonFreeNet
+
+ArchivePolicy: 5
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+UpdateCheckData: android/app/build.gradle.kts|versionCode\s*=\s*(\d+)|.|versionName\s*=\s*"([^"]+)"
+CurrentVersion: 1.0.0
+CurrentVersionCode: 1

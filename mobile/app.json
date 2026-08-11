@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "LeafRust",
+    "slug": "leafrust",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "leafrust",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.leafrust.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "LeafRust нуждается в камере, чтобы сфотографировать лист для анализа.",
+        "NSPhotoLibraryUsageDescription": "LeafRust использует галерею, чтобы выбрать фото листа."
+      }
+    },
+    "android": {
+      "package": "com.leafrust.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F3F0E8",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-sharing",
+      "expo-mail-composer",
+      "expo-asset",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "LeafRust нуждается в камере для съёмки листа.",
+          "photosPermission": "LeafRust нуждается в доступе к галерее."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F3F0E8"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,0 +1,14 @@
+*.bat text eol=crlf
+gradlew text eol=lf
+*.sh text eol=lf
+*.kt text
+*.kts text
+*.xml text
+*.md text
+*.yml text
+*.yaml text
+*.properties text
+*.txt text
+*.tflite binary
+*.sqlite binary
+*.jar binary
