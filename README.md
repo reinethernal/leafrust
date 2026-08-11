@@ -75,7 +75,7 @@ python train_mobilenet.py --data /path/to/PlantVillage --out ../android/app/src/
 После публикации через GitHub Actions:
 
 ```
-https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=9FEAF2FA0148A741D9A3BEEF5C3CB0F3FA8F1DE13874CB9FEA71CA27950D360E
+https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=9FEAF2FA0148A741D9A3BEEF5C3CB0F3FA8F1DE13874CB9FEA71CA27950D360E
 ```
 
 Настройка секретов и Pages: [`FDROID.md`](FDROID.md).
@@ -89,4 +89,5 @@ https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=9FEAF2FA0148A741
 cd android
 ./gradlew :app:assembleRelease
 ```
+
 

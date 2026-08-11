@@ -9,12 +9,12 @@
     "icon": {
       "en-US": {
         "name": "/icons/icon.png",
-        "sha256": "f6ef092f189f49b72922375682ef3b941d92e2aa4e6dca712d3c3b2a3b291ef9",
-        "size": 897
+        "sha256": "3188fef2af3d0b4ced3fb4b75a35d6dfbf2e0ebcbfce6bf2db4b5effafef7755",
+        "size": 858
       }
     },
-    "address": "https://reinethernal.github.io/leafrust/fdroid/repo",
-    "timestamp": 1786430615000,
+    "address": "https://reinethernal.github.io/leafrust/docs/fdroid/repo",
+    "timestamp": 1786430757000,
     "categories": {
       "Multimedia": {
         "name": {
@@ -31,14 +31,14 @@
   "packages": {
     "com.leafrust": {
       "metadata": {
-        "added": 1786430615000,
+        "added": 1786430757000,
         "categories": [
           "Science & Education",
           "Multimedia"
         ],
         "changelog": "https://github.com/reinethernal/leafrust/releases",
         "issueTracker": "https://github.com/reinethernal/leafrust/issues",
-        "lastUpdated": 1786430615000,
+        "lastUpdated": 1786430757000,
         "license": "Apache-2.0",
         "sourceCode": "https://github.com/reinethernal/leafrust",
         "webSite": "https://github.com/reinethernal/leafrust",
@@ -56,7 +56,7 @@
       },
       "versions": {
         "3bd16e733784534389cf25befce5f43fca4a7cd6c70c4b4adab8818e2a402ba6": {
-          "added": 1786430615000,
+          "added": 1786430757000,
           "file": {
             "name": "/com.leafrust.apk",
             "sha256": "3bd16e733784534389cf25befce5f43fca4a7cd6c70c4b4adab8818e2a402ba6",

@@ -8,7 +8,7 @@ name: F-Droid third-party repo
 #    FDROID_KEY_ALIAS=leafrust, FDROID_KEY_PASSWORD
 # 2. Settings → Pages → Deploy from a branch → main / docs
 # 3. Run this workflow (or push tag v*)
-# 4. Add: https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=...
+# 4. Add: https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=...
 
 on:
   push:
@@ -100,7 +100,7 @@ jobs:
               f'ls -d "{os.environ["ANDROID_HOME"]}"/build-tools/*/apksigner | sort -V | tail -1'
           ).read().strip()
           text = "\n".join([
-              "repo_url: https://reinethernal.github.io/leafrust/fdroid/repo",
+              "repo_url: https://reinethernal.github.io/leafrust/docs/fdroid/repo",
               "repo_name: LeafRust",
               "repo_description: Official LeafRust third-party F-Droid repository",
               "archive_older: 0",
@@ -123,7 +123,7 @@ jobs:
           touch "$GITHUB_WORKSPACE/docs/.nojekyll"
           cp -a "$WORK/repo" "$GITHUB_WORKSPACE/docs/fdroid/repo"
           sed "s|@FINGERPRINT@|$FP|g" "$GITHUB_WORKSPACE/fdroid/site-index.html" > "$GITHUB_WORKSPACE/docs/index.html"
-          echo "Add-repo URL: https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=$FP" >> "$GITHUB_STEP_SUMMARY"
+          echo "Add-repo URL: https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=$FP" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Wipe secrets from disk
         if: always()

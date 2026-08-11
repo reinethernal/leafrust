@@ -55,7 +55,7 @@ def main() -> None:
     (work / "config.yml").write_text(
         "\n".join(
             [
-                "repo_url: https://reinethernal.github.io/leafrust/fdroid/repo",
+                "repo_url: https://reinethernal.github.io/leafrust/docs/fdroid/repo",
                 "repo_name: LeafRust",
                 "repo_description: Official LeafRust third-party F-Droid repository",
                 "archive_older: 0",
