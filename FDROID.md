@@ -1,29 +1,25 @@
 # Сторонний репозиторий F-Droid
 
-## URL для клиента (рабочий)
+## URL (скопируйте целиком одной строкой)
 
 ```
-https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=9FEAF2FA0148A741D9A3BEEF5C3CB0F3FA8F1DE13874CB9FEA71CA27950D360E
+https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=9feaf2fa0148a741d9a3beef5c3cb0f3fa8f1de13874cb9fea71ca27950d360e
 ```
 
-Проверка в браузере (должно быть **не** 404):  
+Тот же текст: https://reinethernal.github.io/leafrust/docs/add-repo.txt
+
+## Если пишет «неверный отпечаток»
+
+1. В F-Droid → Repositories **удалите** прошлую попытку (leafrust / LeafRust / github.io).
+2. Добавьте репозиторий заново по URL выше (**без** пробелов и переносов).
+3. Не подставляйте отпечаток HTTPS-сертификата сайта — нужен отпечаток **ключа индекса** (уже в URL).
+
+Проверка индекса в браузере:  
 https://reinethernal.github.io/leafrust/docs/fdroid/repo/index-v1.jar
 
-## Почему был NotFoundException
-
-Pages отдавал корень `main` (README), а индекса `/fdroid/repo/` не было.  
-Сейчас индекс лежит в `docs/fdroid/repo/` → в URL нужен сегмент **`/docs/`**.
-
-## Опционально: короткий URL без /docs
-
-Settings → Pages → Branch **main** → folder **/docs** → Save.  
-Тогда можно будет использовать  
-`https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=...`  
-(после смены папки нужно снова поправить `repo_url` и пересобрать индекс).
-
-## Обновление
+## Обновление репо
 
 ```bash
 python scripts/publish_fdroid_docs.py
-git add docs && git commit -m "Update F-Droid repo" && git push
+git add docs .nojekyll && git commit -m "Update F-Droid repo" && git push
 ```

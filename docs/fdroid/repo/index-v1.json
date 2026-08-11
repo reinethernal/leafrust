@@ -1,6 +1,6 @@
 {
   "repo": {
-    "timestamp": 1786430757000,
+    "timestamp": 1786432204000,
     "version": 20002,
     "name": "LeafRust",
     "icon": "icon.png",
@@ -26,9 +26,9 @@
       "sourceCode": "https://github.com/reinethernal/leafrust",
       "summary": "On-device leaf disease check with treatment tips",
       "webSite": "https://github.com/reinethernal/leafrust",
-      "added": 1786430757000,
+      "added": 1786432204000,
       "packageName": "com.leafrust",
-      "lastUpdated": 1786430757000,
+      "lastUpdated": 1786432204000,
       "localized": {
         "en-US": {
           "name": "LeafRust"
@@ -39,7 +39,7 @@
   "packages": {
     "com.leafrust": [
       {
-        "added": 1786430757000,
+        "added": 1786432204000,
         "apkName": "com.leafrust.apk",
         "hash": "3bd16e733784534389cf25befce5f43fca4a7cd6c70c4b4adab8818e2a402ba6",
         "hashType": "sha256",
