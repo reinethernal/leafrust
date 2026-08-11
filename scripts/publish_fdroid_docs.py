@@ -207,11 +207,17 @@ def main() -> None:
         "@FINGERPRINT@", fp
     )
     (docs / "index.html").write_bytes(html.replace("\r\n", "\n").encode("utf-8"))
-    (docs / "add-repo.txt").write_bytes(
-        f"https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint={fp}\n".encode(
-            "ascii"
-        )
+    repo_url = (
+        f"https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint={fp}"
     )
+    (docs / "add-repo.txt").write_bytes((repo_url + "\n").encode("ascii"))
+    try:
+        import qrcode
+
+        qrcode.make(repo_url, box_size=8, border=2).save(docs / "fdroid-repo-qr.png")
+        print("QR", docs / "fdroid-repo-qr.png")
+    except Exception as exc:  # noqa: BLE001
+        print("QR skipped:", exc)
     (SECRETS / "fingerprint.txt").write_bytes(fp.encode("ascii") + b"\n")
 
     print("Published to", docs)

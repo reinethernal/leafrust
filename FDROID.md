@@ -6,7 +6,9 @@
 https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=9feaf2fa0148a741d9a3beef5c3cb0f3fa8f1de13874cb9fea71ca27950d360e
 ```
 
-Тот же текст: https://reinethernal.github.io/leafrust/docs/add-repo.txt
+Тот же текст: https://reinethernal.github.io/leafrust/docs/add-repo.txt  
+QR: https://reinethernal.github.io/leafrust/docs/fdroid-repo-qr.png  
+Лендинг: https://reinethernal.github.io/leafrust/docs/
 
 ## Если пишет «неверный отпечаток»
 
