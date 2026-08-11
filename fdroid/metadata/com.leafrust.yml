@@ -1,0 +1,24 @@
+Categories:
+  - Science & Education
+  - Multimedia
+
+License: Apache-2.0
+
+AuthorName: LeafRust contributors
+WebSite: https://github.com/reinethernal/leafrust
+SourceCode: https://github.com/reinethernal/leafrust
+IssueTracker: https://github.com/reinethernal/leafrust/issues
+Changelog: https://github.com/reinethernal/leafrust/releases
+
+AutoName: LeafRust
+
+Summary: On-device leaf disease check with treatment tips
+Description: |-
+    LeafRust analyzes a plant leaf photo entirely on your device.
+
+    * Camera / gallery with align and crop
+    * On-device TensorFlow Lite disease estimate
+    * Offline plant/disease tips (RU)
+    * Local history and Android share sheet
+
+    No accounts, ads, or analytics.

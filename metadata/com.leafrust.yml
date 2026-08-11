@@ -34,7 +34,8 @@ Repo: https://github.com/reinethernal/leafrust.git
 Builds:
   - versionName: 1.0.0
     versionCode: 1
-    commit: v1.0.0
+    commit: 4e00395aa676b35e8d15b735ff8c206d41517341
+    # tag v1.0.0 points to the same commit; hash is safer for CI
     subdir: android
     sudo:
       - apt-get update || apt-get update

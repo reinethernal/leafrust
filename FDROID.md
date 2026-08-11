@@ -1,76 +1,57 @@
-# F-Droid packaging for LeafRust
+# Сторонний репозиторий F-Droid (добавить в приложение)
 
-Checklist and notes for publishing LeafRust on [F-Droid](https://f-droid.org/).
+GitHub с исходниками **нельзя** добавить в F-Droid → Repositories.  
+Нужен **опубликованный индекс** (`index-v1.jar` + APK) по HTTPS.
 
-## What is already in the repo
+После настройки CI URL будет таким:
 
-| Item | Path |
-|------|------|
-| Apache-2.0 license | `LICENSE` |
-| Third-party / privacy notice | `NOTICE` |
-| Fastlane store metadata (en-US, ru-RU) | `fastlane/metadata/android/` |
-| fdroiddata recipe template | `metadata/com.leafrust.yml` |
-| Unsigned-friendly release build | `android/app/build.gradle.kts` |
-| Bundled TFLite model + labels | `android/app/src/main/assets/models/` |
-| Offline plant KB (SQLite) | `android/app/src/main/assets/kb/` |
-
-App id: `com.leafrust` · versionName `1.0.0` · versionCode `1`
-
-## Before you submit
-
-1. **Public Git repo** — https://github.com/reinethernal/leafrust (already set in `metadata/com.leafrust.yml`).
-2. **Tag a release**: `git tag -a v1.0.0 -m "1.0.0" && git push --tags`
-3. **Screenshots** — add portrait PNGs under:
-   - `fastlane/metadata/android/en-US/images/phoneScreenshots/`
-   - (optional) `fastlane/metadata/android/ru-RU/images/phoneScreenshots/`
-4. **Optional icon for the listing** — `fastlane/metadata/android/en-US/images/icon.png` (512×512).
-
-## Local unsigned release (same as F-Droid)
-
-```bash
-cd android
-./gradlew :app:clean :app:assembleRelease
-# APK: app/build/outputs/apk/release/app-release-unsigned.apk
+```
+https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=9FEAF2FA0148A741D9A3BEEF5C3CB0F3FA8F1DE13874CB9FEA71CA27950D360E
 ```
 
-Linux/macOS need the Unix `gradlew` script (committed next to `gradlew.bat`). F-Droid runs on Linux and invokes `./gradlew`.
+(отпечаток уже сгенерирован локально в `.secrets/`; тот же ключ нужно залить в GitHub Secrets.)
 
-Do **not** set `LEAFRUST_STORE_*` when checking F-Droid compatibility — the CI build must stay unsigned so F-Droid can sign it.
+## Разовая настройка
 
-Optional local signing (not used by F-Droid):
+1. **Pages:** GitHub → Settings → Pages → Source = **GitHub Actions**.
+2. **Секреты:** Settings → Secrets and variables → Actions → New repository secret:
 
-```bash
-export LEAFRUST_STORE_FILE=/path/to.keystore
-export LEAFRUST_STORE_PASSWORD=...
-export LEAFRUST_KEY_ALIAS=...
-export LEAFRUST_KEY_PASSWORD=...
-./gradlew :app:assembleRelease
-```
+   | Secret | Откуда |
+   |--------|--------|
+   | `FDROID_KEYSTORE_BASE64` | вывод скрипта |
+   | `FDROID_KEYSTORE_PASSWORD` | то же |
+   | `FDROID_KEY_ALIAS` | `leafrust` |
+   | `FDROID_KEY_PASSWORD` | то же, что password |
 
-## Submit to fdroiddata
+   Локально (ключи уже в `.secrets/`, в git не попадают):
 
-1. Fork [fdroiddata](https://gitlab.com/fdroid/fdroiddata).
-2. Copy `metadata/com.leafrust.yml` into that fork (same path).
-3. Fix SourceCode / Repo URLs and `commit: v1.0.0` (or the exact commit hash).
-4. Open a merge request following [Inclusion How-To](https://f-droid.org/docs/Inclusion_How-To/).
-5. Expect review for:
-   - reproducible / source build from `subdir: android`
-   - `AntiFeatures: NonFreeAssets` (prebuilt `.tflite` weights)
-   - INTERNET only for optional model download (weights are also bundled)
+   ```bash
+   python scripts/print_fdroid_secrets.py
+   ```
 
-## AntiFeatures
+3. **Запуск:** Actions → **F-Droid third-party repo** → Run workflow  
+   (или push тега `v*`).
+4. Откройте https://reinethernal.github.io/leafrust/ — там кнопка/URL для клиента.
+5. В F-Droid: Settings → Repositories → **+** → вставьте URL с `?fingerprint=...`.
 
-- **NonFreeAssets** — PlantVillage-derived TFLite weights are shipped as a binary blob and are not rebuilt in the F-Droid recipe. Documented in `NOTICE` and `android/app/src/main/assets/models/README.md`.
+## Что в репозитории
 
-Do not add proprietary SDKs (Play Services, Crashlytics, ads, analytics).
+| Путь | Назначение |
+|------|------------|
+| `.github/workflows/fdroid-repo.yml` | Сборка signed APK + `fdroid update` → GitHub Pages |
+| `fdroid/metadata/com.leafrust.yml` | Описание приложения в стороннем репо |
+| `fdroid/site-index.html` | Лендинг с URL для добавления |
+| `scripts/generate_fdroid_keys.py` | Создать keystore (если нужно заново) |
+| `scripts/print_fdroid_secrets.py` | Печать значений для GitHub Secrets |
+| `metadata/com.leafrust.yml` | Рецепт для **официального** fdroiddata (отдельно) |
 
-## Build recipe notes
+## Важно про ключи
 
-- Gradle project root for F-Droid: `android/` (`subdir: android`).
-- Output: `app/build/outputs/apk/release/app-release-unsigned.apk`
-- `mobile/` (Expo archive) and `.build-tools/` are removed in the recipe so the scanner does not pick up unrelated JS deps or local SDK installs.
-- Fastlane metadata at the **git root** (not under `android/`) is the layout F-Droid expects when the recipe uses the default metadata path relative to the repo.
+- Один keystore подписывает и APK, и индекс репозитория.
+- Не коммитьте `.secrets/` и не ротируйте ключ без нужды — иначе у пользователей сменится fingerprint.
+- Обновления в F-Droid-клиенте работают только пока APK подписан **тем же** ключом.
 
-## Privacy summary (for reviewers)
+## Официальный каталог F-Droid
 
-No accounts, ads, or analytics. Photos and inspection history stay on-device unless the user shares them. Network is used only to optionally refresh the model.
+Стороннее репо ≠ попадание в f-droid.org. Для официального каталога нужен MR в  
+[fdroiddata](https://gitlab.com/fdroid/fdroiddata) (файл `metadata/com.leafrust.yml` в корне этого проекта).

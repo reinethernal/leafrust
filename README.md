@@ -70,19 +70,23 @@ python train_mobilenet.py --data /path/to/PlantVillage --out ../android/app/src/
 
 ## F-Droid
 
-Приложение подготовлено к публикации в F-Droid (Apache-2.0, без проприетарных SDK).
+### Сторонний репозиторий (добавить в приложение F-Droid)
 
-- Чеклист и инструкция: [`FDROID.md`](FDROID.md)
-- Шаблон рецепта: [`metadata/com.leafrust.yml`](metadata/com.leafrust.yml)
-- Тексты магазина: [`fastlane/metadata/android/`](fastlane/metadata/android/)
-- Лицензия / атрибуция: [`LICENSE`](LICENSE), [`NOTICE`](NOTICE)
+После публикации через GitHub Actions:
 
-Локальная unsigned release-сборка (как у F-Droid):
+```
+https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=9FEAF2FA0148A741D9A3BEEF5C3CB0F3FA8F1DE13874CB9FEA71CA27950D360E
+```
+
+Настройка секретов и Pages: [`FDROID.md`](FDROID.md).
+
+### Официальный каталог
+
+Шаблон для fdroiddata: [`metadata/com.leafrust.yml`](metadata/com.leafrust.yml).  
+Лицензия: [`LICENSE`](LICENSE), [`NOTICE`](NOTICE).
 
 ```bash
 cd android
 ./gradlew :app:assembleRelease
-# app/build/outputs/apk/release/app-release-unsigned.apk
 ```
 
-Перед подачей в [fdroiddata](https://gitlab.com/fdroid/fdroiddata): запушить на https://github.com/reinethernal/leafrust, тег `v1.0.0`, добавить скриншоты в fastlane.

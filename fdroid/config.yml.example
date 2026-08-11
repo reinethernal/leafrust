@@ -1,0 +1,13 @@
+# Example only — real config.yml is generated in CI from GitHub Secrets.
+# Do not commit passwords or keystore paths with secrets.
+
+repo_url: https://reinethernal.github.io/leafrust/fdroid/repo
+repo_name: LeafRust
+repo_description: Official LeafRust third-party F-Droid repository
+archive_older: 0
+
+# Filled at runtime:
+# keystore: /path/to/leafrust-fdroid.jks
+# repo_keyalias: leafrust
+# keystorepass: ***
+# keypass: ***

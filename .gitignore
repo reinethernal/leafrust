@@ -20,11 +20,16 @@ mobile/.expo/
 mobile/dist/
 
 .build-tools/
+.secrets/
 *.apk
 *.aab
 *.keystore
 *.jks
 
-# Local SDK / JDK installs
-.build-tools/
+# Local F-Droid publish working tree (CI builds this)
+fdroid/repo/
+fdroid/tmp/
+fdroid/srclibs/
+fdroid/unsigned/
+fdroid/config.yml
 
