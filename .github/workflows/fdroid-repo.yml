@@ -1,18 +1,18 @@
 name: F-Droid third-party repo
 
 # Builds a signed release APK and publishes a proper F-Droid repository
-# (index-v1.jar + APK) to GitHub Pages so the F-Droid client can add it via:
-#   https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=...
+# (index-v1.jar + APK) to the gh-pages branch → GitHub Pages.
 #
 # ONE-TIME SETUP
-# 1. GitHub → Settings → Pages → Source = GitHub Actions
-# 2. Settings → Secrets and variables → Actions — add:
+# 1. Add Actions secrets (python scripts/print_fdroid_secrets.py):
 #      FDROID_KEYSTORE_BASE64
 #      FDROID_KEYSTORE_PASSWORD
-#      FDROID_KEY_ALIAS          (default: leafrust)
-#      FDROID_KEY_PASSWORD       (usually same as store password)
-#    Generate values with:  python scripts/print_fdroid_secrets.py
-# 3. Run this workflow (Actions → F-Droid third-party repo → Run workflow)
+#      FDROID_KEY_ALIAS=leafrust
+#      FDROID_KEY_PASSWORD
+# 2. Run this workflow once (creates branch gh-pages).
+# 3. GitHub → Settings → Pages:
+#      Source = Deploy from a branch
+#      Branch = gh-pages / (root)
 # 4. Open https://reinethernal.github.io/leafrust/ and copy the add-repo URL
 
 on:
@@ -22,9 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: fdroid-pages
@@ -33,11 +31,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Require signing secrets
         env:
@@ -54,12 +49,12 @@ jobs:
             fi
           done
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -89,7 +84,6 @@ jobs:
       - name: Install fdroidserver
         run: |
           python -m pip install --upgrade pip
-          # Pin stack known to work with modern APK signatures
           pip install 'fdroidserver==2.3.5' 'androguard==4.1.2' pyasn1 pyyaml requests
 
       - name: Assemble F-Droid repo tree
@@ -117,7 +111,6 @@ jobs:
           keystorepass: {os.environ['FDROID_KEYSTORE_PASSWORD']}
           keypass: {os.environ['FDROID_KEY_PASSWORD']}
           """
-          # strip accidental indent from each line
           text = "\n".join(line.lstrip() for line in cfg.splitlines()) + "\n"
           (work / "config.yml").write_text(text, encoding="utf-8")
           print("Wrote", work / "config.yml")
@@ -146,20 +139,24 @@ jobs:
           mkdir -p _site/fdroid
           cp -a "$WORK/repo" _site/fdroid/repo
           sed "s|@FINGERPRINT@|$FP|g" fdroid/site-index.html > _site/index.html
-          # Keep fingerprint for Actions summary
           echo "### Add in F-Droid" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=$FP" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "### Pages setup" >> "$GITHUB_STEP_SUMMARY"
+          echo "Settings → Pages → Deploy from a branch → **gh-pages** / (root)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Wipe secrets from disk
         if: always()
         run: rm -f "$RUNNER_TEMP/leafrust.jks" "$WORK/config.yml" || true
 
-      - uses: actions/upload-pages-artifact@v3
+      # Push site to gh-pages (no deploy-pages API — avoids 404 when Pages Actions source is unset)
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: _site
-
-      - id: deploy
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com

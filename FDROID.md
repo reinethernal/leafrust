@@ -13,8 +13,7 @@ https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=9FEAF2FA0148A741
 
 ## Разовая настройка
 
-1. **Pages:** GitHub → Settings → Pages → Source = **GitHub Actions**.
-2. **Секреты:** Settings → Secrets and variables → Actions → New repository secret:
+1. **Секреты:** Settings → Secrets and variables → Actions → New repository secret:
 
    | Secret | Откуда |
    |--------|--------|
@@ -29,16 +28,24 @@ https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=9FEAF2FA0148A741
    python scripts/print_fdroid_secrets.py
    ```
 
-3. **Запуск:** Actions → **F-Droid third-party repo** → Run workflow  
-   (или push тега `v*`).
-4. Откройте https://reinethernal.github.io/leafrust/ — там кнопка/URL для клиента.
+2. **Запуск:** Actions → **F-Droid third-party repo** → Run workflow  
+   (создаст ветку `gh-pages`).
+
+3. **Pages:** https://github.com/reinethernal/leafrust/settings/pages  
+   - Source = **Deploy from a branch**  
+   - Branch = **gh-pages** / **(root)** → Save  
+
+   Не выбирайте «GitHub Actions» — workflow пишет в ветку `gh-pages`.
+
+4. Через 1–2 минуты: https://reinethernal.github.io/leafrust/
+
 5. В F-Droid: Settings → Repositories → **+** → вставьте URL с `?fingerprint=...`.
 
 ## Что в репозитории
 
 | Путь | Назначение |
 |------|------------|
-| `.github/workflows/fdroid-repo.yml` | Сборка signed APK + `fdroid update` → GitHub Pages |
+| `.github/workflows/fdroid-repo.yml` | Сборка signed APK + `fdroid update` → ветка `gh-pages` |
 | `fdroid/metadata/com.leafrust.yml` | Описание приложения в стороннем репо |
 | `fdroid/site-index.html` | Лендинг с URL для добавления |
 | `scripts/generate_fdroid_keys.py` | Создать keystore (если нужно заново) |
