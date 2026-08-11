@@ -1,0 +1,102 @@
+{
+  "repo": {
+    "name": {
+      "en-US": "LeafRust"
+    },
+    "description": {
+      "en-US": "Official LeafRust third-party F-Droid repository"
+    },
+    "icon": {
+      "en-US": {
+        "name": "/icons/icon.png",
+        "sha256": "f6ef092f189f49b72922375682ef3b941d92e2aa4e6dca712d3c3b2a3b291ef9",
+        "size": 897
+      }
+    },
+    "address": "https://reinethernal.github.io/leafrust/fdroid/repo",
+    "timestamp": 1786430615000,
+    "categories": {
+      "Multimedia": {
+        "name": {
+          "en-US": "Multimedia"
+        }
+      },
+      "Science & Education": {
+        "name": {
+          "en-US": "Science & Education"
+        }
+      }
+    }
+  },
+  "packages": {
+    "com.leafrust": {
+      "metadata": {
+        "added": 1786430615000,
+        "categories": [
+          "Science & Education",
+          "Multimedia"
+        ],
+        "changelog": "https://github.com/reinethernal/leafrust/releases",
+        "issueTracker": "https://github.com/reinethernal/leafrust/issues",
+        "lastUpdated": 1786430615000,
+        "license": "Apache-2.0",
+        "sourceCode": "https://github.com/reinethernal/leafrust",
+        "webSite": "https://github.com/reinethernal/leafrust",
+        "authorName": "LeafRust contributors",
+        "name": {
+          "en-US": "LeafRust"
+        },
+        "summary": {
+          "en-US": "On-device leaf disease check with treatment tips"
+        },
+        "description": {
+          "en-US": "LeafRust analyzes a plant leaf photo entirely on your device.\n\n* Camera / gallery with align and crop\n* On-device TensorFlow Lite disease estimate\n* Offline plant/disease tips (RU)\n* Local history and Android share sheet\n\nNo accounts, ads, or analytics."
+        },
+        "preferredSigner": "9feaf2fa0148a741d9a3beef5c3cb0f3fa8f1de13874cb9fea71ca27950d360e"
+      },
+      "versions": {
+        "3bd16e733784534389cf25befce5f43fca4a7cd6c70c4b4adab8818e2a402ba6": {
+          "added": 1786430615000,
+          "file": {
+            "name": "/com.leafrust.apk",
+            "sha256": "3bd16e733784534389cf25befce5f43fca4a7cd6c70c4b4adab8818e2a402ba6",
+            "size": 43520400
+          },
+          "manifest": {
+            "nativecode": [
+              "arm64-v8a",
+              "armeabi-v7a",
+              "x86",
+              "x86_64"
+            ],
+            "versionName": "1.0.0",
+            "versionCode": 1,
+            "usesSdk": {
+              "minSdkVersion": 26,
+              "targetSdkVersion": 35
+            },
+            "signer": {
+              "sha256": [
+                "9feaf2fa0148a741d9a3beef5c3cb0f3fa8f1de13874cb9fea71ca27950d360e"
+              ]
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.READ_MEDIA_IMAGES"
+              },
+              {
+                "name": "com.leafrust.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

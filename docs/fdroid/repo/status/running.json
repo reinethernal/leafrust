@@ -1,0 +1,27 @@
+{
+  "antiFeatures": {},
+  "apksigner": "X:/CODE/leaf/.build-tools/android-sdk/build-tools/35.0.0/apksigner.bat",
+  "archivePolicy0": [],
+  "commandLine": [
+    "C:\\Users\\skobelevav\\AppData\\Roaming\\Python\\Python310\\Scripts\\fdroid update",
+    "--create-metadata",
+    "--pretty",
+    "--delete-unknown"
+  ],
+  "disabled": [],
+  "endTimestamp": 1786430618446,
+  "failedBuilds": {},
+  "jarsigner": "x:\\CODE\\leaf\\.build-tools\\jdk-17\\bin\\jarsigner.EXE",
+  "keytool": "x:\\CODE\\leaf\\.build-tools\\jdk-17\\bin\\keytool.EXE",
+  "needsUpdate": [
+    "com.leafrust"
+  ],
+  "noPackages": [
+    "com.leafrust"
+  ],
+  "noUpdateCheck": [
+    "com.leafrust"
+  ],
+  "startTimestamp": 1786419815000,
+  "subcommand": "update"
+}

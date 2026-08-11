@@ -1,19 +1,14 @@
 name: F-Droid third-party repo
 
-# Builds a signed release APK and publishes a proper F-Droid repository
-# (index-v1.jar + APK) to the gh-pages branch → GitHub Pages.
+# Builds a signed release APK and publishes the F-Droid repository into docs/
+# on main (GitHub Pages: Settings → Pages → Deploy from a branch → main / docs).
 #
 # ONE-TIME SETUP
-# 1. Add Actions secrets (python scripts/print_fdroid_secrets.py):
-#      FDROID_KEYSTORE_BASE64
-#      FDROID_KEYSTORE_PASSWORD
-#      FDROID_KEY_ALIAS=leafrust
-#      FDROID_KEY_PASSWORD
-# 2. Run this workflow once (creates branch gh-pages).
-# 3. GitHub → Settings → Pages:
-#      Source = Deploy from a branch
-#      Branch = gh-pages / (root)
-# 4. Open https://reinethernal.github.io/leafrust/ and copy the add-repo URL
+# 1. Secrets: FDROID_KEYSTORE_BASE64, FDROID_KEYSTORE_PASSWORD,
+#    FDROID_KEY_ALIAS=leafrust, FDROID_KEY_PASSWORD
+# 2. Settings → Pages → Deploy from a branch → main / docs
+# 3. Run this workflow (or push tag v*)
+# 4. Add: https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=...
 
 on:
   push:
@@ -44,7 +39,7 @@ jobs:
           set -euo pipefail
           for n in FDROID_KEYSTORE_BASE64 FDROID_KEYSTORE_PASSWORD FDROID_KEY_ALIAS FDROID_KEY_PASSWORD; do
             if [ -z "${!n}" ]; then
-              echo "::error::Missing secret $n — run scripts/print_fdroid_secrets.py and add GitHub Actions secrets."
+              echo "::error::Missing secret $n"
               exit 1
             fi
           done
@@ -67,7 +62,6 @@ jobs:
         run: |
           umask 077
           printf '%s' "$FDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/leafrust.jks"
-          ls -la "$RUNNER_TEMP/leafrust.jks"
 
       - name: Build signed release APK
         working-directory: android
@@ -86,7 +80,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install 'fdroidserver==2.3.5' 'androguard==4.1.2' pyasn1 pyyaml requests
 
-      - name: Assemble F-Droid repo tree
+      - name: Assemble F-Droid repo into docs/
         env:
           FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
           FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
@@ -96,67 +90,54 @@ jobs:
           WORK="$RUNNER_TEMP/fdroid-work"
           mkdir -p "$WORK/repo" "$WORK/metadata"
           cp fdroid/metadata/com.leafrust.yml "$WORK/metadata/"
-          cp android/app/build/outputs/apk/release/app-release.apk \
-            "$WORK/repo/com.leafrust.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "$WORK/repo/com.leafrust.apk"
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
           python3 - <<'PY'
           import os
           from pathlib import Path
           work = Path(os.environ["RUNNER_TEMP"]) / "fdroid-work"
-          cfg = f"""repo_url: https://reinethernal.github.io/leafrust/fdroid/repo
-          repo_name: LeafRust
-          repo_description: Official LeafRust third-party F-Droid repository
-          archive_older: 0
-          keystore: {os.environ['RUNNER_TEMP']}/leafrust.jks
-          repo_keyalias: {os.environ['FDROID_KEY_ALIAS']}
-          keystorepass: {os.environ['FDROID_KEYSTORE_PASSWORD']}
-          keypass: {os.environ['FDROID_KEY_PASSWORD']}
-          """
-          text = "\n".join(line.lstrip() for line in cfg.splitlines()) + "\n"
+          apksigner = os.popen(
+              f'ls -d "{os.environ["ANDROID_HOME"]}"/build-tools/*/apksigner | sort -V | tail -1'
+          ).read().strip()
+          text = "\n".join([
+              "repo_url: https://reinethernal.github.io/leafrust/fdroid/repo",
+              "repo_name: LeafRust",
+              "repo_description: Official LeafRust third-party F-Droid repository",
+              "archive_older: 0",
+              f"sdk_path: {os.environ['ANDROID_HOME']}",
+              f"apksigner: {apksigner}",
+              f"keystore: {os.environ['RUNNER_TEMP']}/leafrust.jks",
+              f"repo_keyalias: {os.environ['FDROID_KEY_ALIAS']}",
+              f"keystorepass: {os.environ['FDROID_KEYSTORE_PASSWORD']}",
+              f"keypass: {os.environ['FDROID_KEY_PASSWORD']}",
+              "",
+          ])
           (work / "config.yml").write_text(text, encoding="utf-8")
-          print("Wrote", work / "config.yml")
           PY
-          echo "WORK=$WORK" >> "$GITHUB_ENV"
-
-      - name: fdroid update (sign index)
-        run: |
-          set -euo pipefail
           cd "$WORK"
           fdroid update --create-metadata --pretty --delete-unknown
-          ls -la repo
-          test -f repo/index-v1.jar || test -f repo/index.jar
-          test -f repo/index.xml || test -f repo/index-v2.json
-
-      - name: Build Pages site
-        env:
-          FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
-          FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
-        run: |
-          set -euo pipefail
           FP=$(keytool -exportcert -keystore "$RUNNER_TEMP/leafrust.jks" -alias "$FDROID_KEY_ALIAS" \
             -storepass "$FDROID_KEYSTORE_PASSWORD" 2>/dev/null | openssl dgst -sha256 -r | awk '{print toupper($1)}')
-          echo "Repo fingerprint: $FP"
-          echo "Add-repo URL: https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=$FP"
-          mkdir -p _site/fdroid
-          cp -a "$WORK/repo" _site/fdroid/repo
-          sed "s|@FINGERPRINT@|$FP|g" fdroid/site-index.html > _site/index.html
-          echo "### Add in F-Droid" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=$FP" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "### Pages setup" >> "$GITHUB_STEP_SUMMARY"
-          echo "Settings → Pages → Deploy from a branch → **gh-pages** / (root)" >> "$GITHUB_STEP_SUMMARY"
+          rm -rf "$GITHUB_WORKSPACE/docs"
+          mkdir -p "$GITHUB_WORKSPACE/docs"
+          touch "$GITHUB_WORKSPACE/docs/.nojekyll"
+          cp -a "$WORK/repo" "$GITHUB_WORKSPACE/docs/fdroid/repo"
+          sed "s|@FINGERPRINT@|$FP|g" "$GITHUB_WORKSPACE/fdroid/site-index.html" > "$GITHUB_WORKSPACE/docs/index.html"
+          echo "Add-repo URL: https://reinethernal.github.io/leafrust/fdroid/repo?fingerprint=$FP" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Wipe secrets from disk
         if: always()
-        run: rm -f "$RUNNER_TEMP/leafrust.jks" "$WORK/config.yml" || true
+        run: rm -f "$RUNNER_TEMP/leafrust.jks" || true
 
-      # Push site to gh-pages (no deploy-pages API — avoids 404 when Pages Actions source is unset)
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
-          force_orphan: true
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
+      - name: Commit docs/ to main
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs
+          if git diff --cached --quiet; then
+            echo "No docs changes"
+            exit 0
+          fi
+          git commit -m "Publish F-Droid repository to docs/ for GitHub Pages"
+          git push origin HEAD:main

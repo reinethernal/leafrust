@@ -1,0 +1,81 @@
+{
+  "repo": {
+    "timestamp": 1786430615000,
+    "version": 20002,
+    "name": "LeafRust",
+    "icon": "icon.png",
+    "address": "https://reinethernal.github.io/leafrust/fdroid/repo",
+    "description": "Official LeafRust third-party F-Droid repository"
+  },
+  "requests": {
+    "install": [],
+    "uninstall": []
+  },
+  "apps": [
+    {
+      "authorName": "LeafRust contributors",
+      "categories": [
+        "Science & Education",
+        "Multimedia"
+      ],
+      "changelog": "https://github.com/reinethernal/leafrust/releases",
+      "suggestedVersionCode": "1",
+      "description": "LeafRust analyzes a plant leaf photo entirely on your device.\n\n* Camera / gallery with align and crop\n* On-device TensorFlow Lite disease estimate\n* Offline plant/disease tips (RU)\n* Local history and Android share sheet\n\nNo accounts, ads, or analytics.",
+      "issueTracker": "https://github.com/reinethernal/leafrust/issues",
+      "license": "Apache-2.0",
+      "sourceCode": "https://github.com/reinethernal/leafrust",
+      "summary": "On-device leaf disease check with treatment tips",
+      "webSite": "https://github.com/reinethernal/leafrust",
+      "added": 1786430615000,
+      "packageName": "com.leafrust",
+      "lastUpdated": 1786430615000,
+      "localized": {
+        "en-US": {
+          "name": "LeafRust"
+        }
+      }
+    }
+  ],
+  "packages": {
+    "com.leafrust": [
+      {
+        "added": 1786430615000,
+        "apkName": "com.leafrust.apk",
+        "hash": "3bd16e733784534389cf25befce5f43fca4a7cd6c70c4b4adab8818e2a402ba6",
+        "hashType": "sha256",
+        "minSdkVersion": 26,
+        "nativecode": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "packageName": "com.leafrust",
+        "sig": "d58f5e570819d20092caeef47150588c",
+        "signer": "9feaf2fa0148a741d9a3beef5c3cb0f3fa8f1de13874cb9fea71ca27950d360e",
+        "size": 43520400,
+        "targetSdkVersion": 35,
+        "uses-permission": [
+          [
+            "android.permission.INTERNET",
+            null
+          ],
+          [
+            "android.permission.CAMERA",
+            null
+          ],
+          [
+            "android.permission.READ_MEDIA_IMAGES",
+            null
+          ],
+          [
+            "com.leafrust.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+            null
+          ]
+        ],
+        "versionCode": 1,
+        "versionName": "1.0.0"
+      }
+    ]
+  }
+}

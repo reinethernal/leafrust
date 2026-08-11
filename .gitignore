@@ -22,6 +22,7 @@ mobile/dist/
 .build-tools/
 .secrets/
 *.apk
+!docs/fdroid/repo/*.apk
 *.aab
 *.keystore
 *.jks
