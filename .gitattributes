@@ -12,3 +12,6 @@ gradlew text eol=lf
 *.tflite binary
 *.sqlite binary
 *.jar binary
+
+# F-Droid repo payloads must keep exact bytes (hash in entry.json)
+docs/fdroid/repo/** binary
