@@ -41,8 +41,14 @@ cd android
 
 ### CI (GitHub Actions)
 
-- Push/PR в `main` с изменениями в `android/` → workflow **Android CI** собирает debug APK (артефакт `leafrust-debug` на странице run).
-- Тег `v*` или ручной запуск → **F-Droid third-party repo** (signed release + Pages).
+- Push в `main` с изменениями в `android/` → **Auto release**:
+  - минорная версия `X.Y.Z` → `X.(Y+1).0`, `versionCode++`
+  - тег `vX.Y.0`, GitHub Release + APK
+  - F-Droid в `docs/fdroid/`
+- PR → **Android CI** (только debug-сборка)
+- Ручной перевыпуск F-Droid: Actions → F-Droid / Auto release (`workflow_dispatch`)
+
+Коммит с `[skip version]` не поднимает версию.
 
 ## База знаний
 

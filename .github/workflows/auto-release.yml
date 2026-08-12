@@ -1,34 +1,54 @@
-name: F-Droid third-party repo
+name: Auto release
 
-# Builds a signed release APK and publishes the F-Droid repository into docs/fdroid.
-# Prefer automatic releases via .github/workflows/auto-release.yml (push to main).
-# This workflow remains for manual / tag republish.
+# On every push to main (app changes): bump MINOR version, tag, build signed release,
+# publish F-Droid docs/, upload APK artifact + GitHub Release.
 #
-# ONE-TIME SETUP
-# 1. Secrets: FDROID_KEYSTORE_BASE64, FDROID_KEYSTORE_PASSWORD,
-#    FDROID_KEY_ALIAS=leafrust, FDROID_KEY_PASSWORD
-# 2. Settings → Pages → Deploy from a branch → main / docs
-# 3. Run Auto release (push android/ to main) or this workflow
-# 4. Add: https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=...
+# Skips: commits with [skip version], github-actions[bot], docs-only model/CDN noise
+#         when android/ did not change (paths filter).
+#
+# Secrets (same as F-Droid workflow): FDROID_KEYSTORE_BASE64, FDROID_KEYSTORE_PASSWORD,
+# FDROID_KEY_ALIAS, FDROID_KEY_PASSWORD
 
 on:
-  workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+    paths:
+      - "android/**"
+      - "metadata/com.leafrust.yml"
+      - "fdroid/**"
+      - "scripts/bump_version.py"
+      - ".github/workflows/auto-release.yml"
+  workflow_dispatch:
+    inputs:
+      part:
+        description: "SemVer part to bump"
+        required: true
+        default: minor
+        type: choice
+        options: [minor, patch, major]
 
 permissions:
   contents: write
 
 concurrency:
-  group: fdroid-pages
-  cancel-in-progress: true
+  group: auto-release-main
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.actor != 'github-actions[bot]' &&
+        !contains(github.event.head_commit.message, '[skip version]') &&
+        !contains(github.event.head_commit.message, 'Publish F-Droid repository')
+      )
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Require signing secrets
         env:
@@ -49,6 +69,8 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
+          cache-dependency-path: android/**/gradle-wrapper.properties
 
       - uses: actions/setup-python@v6
         with:
@@ -56,6 +78,34 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Bump minor version
+        id: bump
+        run: |
+          PART="${{ github.event.inputs.part }}"
+          PART="${PART:-minor}"
+          python3 scripts/bump_version.py --part "$PART"
+
+      - name: Commit version bump
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add android/app/build.gradle.kts metadata/com.leafrust.yml
+          if git diff --cached --quiet; then
+            echo "No version changes"
+            exit 1
+          fi
+          VER="${{ steps.bump.outputs.version_name }}"
+          git commit -m "chore: bump version to ${VER} [skip version]"
+          git push origin HEAD:main
+
+      - name: Create tag
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.bump.outputs.tag }}"
+          git tag -a "$TAG" -m "LeafRust ${{ steps.bump.outputs.version_name }}"
+          git push origin "$TAG"
 
       - name: Decode keystore
         env:
@@ -73,15 +123,26 @@ jobs:
           LEAFRUST_KEY_PASSWORD: ${{ secrets.FDROID_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+          ./gradlew :app:assembleRelease :app:assembleDebug --no-daemon --stacktrace
           test -f app/build/outputs/apk/release/app-release.apk
+          test -f app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: leafrust-${{ steps.bump.outputs.version_name }}
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Install fdroidserver
         run: |
           python -m pip install --upgrade pip
           pip install 'fdroidserver==2.3.5' 'androguard==4.1.2' pyasn1 pyyaml requests
 
-      - name: Assemble F-Droid repo into docs/
+      - name: Assemble F-Droid repo into docs/fdroid
         env:
           FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
           FDROID_KEY_ALIAS: ${{ secrets.FDROID_KEY_ALIAS }}
@@ -92,7 +153,6 @@ jobs:
           mkdir -p "$WORK/repo" "$WORK/metadata"
           cp fdroid/metadata/com.leafrust.yml "$WORK/metadata/"
           cp android/app/build/outputs/apk/release/app-release.apk "$WORK/repo/com.leafrust.apk"
-          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
           python3 - <<'PY'
           import os
           from pathlib import Path
@@ -125,22 +185,40 @@ jobs:
           rm -rf "$GITHUB_WORKSPACE/docs/fdroid"
           mkdir -p "$GITHUB_WORKSPACE/docs/fdroid"
           cp -a "$WORK/repo" "$GITHUB_WORKSPACE/docs/fdroid/repo"
-          sed "s|@FINGERPRINT@|$FP|g" "$GITHUB_WORKSPACE/fdroid/site-index.html" > "$GITHUB_WORKSPACE/docs/index.html"
+          if [ -f "$GITHUB_WORKSPACE/fdroid/site-index.html" ]; then
+            sed "s|@FINGERPRINT@|$FP|g" "$GITHUB_WORKSPACE/fdroid/site-index.html" > "$GITHUB_WORKSPACE/docs/index.html"
+          fi
+          echo "version=${{ steps.bump.outputs.version_name }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Add-repo URL: https://reinethernal.github.io/leafrust/docs/fdroid/repo?fingerprint=$FP" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Wipe secrets from disk
         if: always()
         run: rm -f "$RUNNER_TEMP/leafrust.jks" || true
 
-      - name: Commit docs/fdroid to main
+      - name: Commit F-Droid docs
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/fdroid docs/index.html docs/.nojekyll || true
           if git diff --cached --quiet; then
-            echo "No docs changes"
-            exit 0
+            echo "No F-Droid docs changes"
+          else
+            git commit -m "Publish F-Droid repository to docs/ for GitHub Pages [skip version]"
+            git push origin HEAD:main
           fi
-          git commit -m "Publish F-Droid repository to docs/ for GitHub Pages [skip version]"
-          git push origin HEAD:main
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.tag }}
+          name: LeafRust ${{ steps.bump.outputs.version_name }}
+          body: |
+            Automatic release **${{ steps.bump.outputs.version_name }}** (versionCode ${{ steps.bump.outputs.version_code }}).
+
+            - Signed release APK attached
+            - F-Droid repo updated under `docs/fdroid/`
+          files: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/debug/app-debug.apk
+          fail_on_unmatched_files: true

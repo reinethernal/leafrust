@@ -1,14 +1,8 @@
 name: Android CI
 
-# Debug APK on every relevant push/PR to main. Artifacts are downloadable from the run page.
-# Release / F-Droid still uses .github/workflows/fdroid-repo.yml on tags v*.
+# PR / manual: verify debug build. Full release+F-Droid+version bump → Auto release.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "android/**"
-      - ".github/workflows/android-ci.yml"
   pull_request:
     branches: [main]
     paths:
