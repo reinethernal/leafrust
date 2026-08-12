@@ -7,6 +7,7 @@ venv/
 *.tflite
 !android/app/src/main/assets/models/plantvillage_mobilenet.tflite
 !docs/models/plantvillage_mobilenet.tflite
+!docs/models/plantvillage_mobilenet_v1.tflite
 !mobile/models/README.md
 !android/app/src/main/assets/models/README.md
 
@@ -20,11 +21,17 @@ mobile/node_modules/
 mobile/.expo/
 mobile/dist/
 
-data/
-docs/models/*.tflite.part
+_bundle_extract/
+plantvillage_mobilenet_bundle.zip
+debug.log
+
 
 .build-tools/
 .secrets/
+scripts/_studio_bridge_prompt.txt
+scripts/huggingface.token
+scripts/.hf_token
+scripts/hf_token.txt
 *.apk
 !docs/fdroid/repo/*.apk
 *.aab

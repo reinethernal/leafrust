@@ -1,0 +1,93 @@
+{
+  "notebook_version": "2026-08-11-gpu-v3",
+  "finished_utc": "2026-08-12T04:00:02.526360+00:00",
+  "torch": "2.6.0+cu124",
+  "device": "cuda:1",
+  "gpu_name": "NVIDIA RTX A4000",
+  "num_images": 88039,
+  "classes": [
+    "Apple___Apple_scab",
+    "Apple___Black_rot",
+    "Apple___Cedar_apple_rust",
+    "Apple___healthy",
+    "Background",
+    "Blueberry___healthy",
+    "Cherry___Powdery_mildew",
+    "Cherry___healthy",
+    "Corn___Cercospora_leaf_spot Gray_leaf_spot",
+    "Corn___Common_rust",
+    "Corn___Northern_Leaf_Blight",
+    "Corn___healthy",
+    "Grape___Black_rot",
+    "Grape___Esca_(Black_Measles)",
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "Grape___healthy",
+    "Orange___Haunglongbing_(Citrus_greening)",
+    "Peach___Bacterial_spot",
+    "Peach___healthy",
+    "Pepper___Bacterial_spot",
+    "Pepper___healthy",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Potato___healthy",
+    "Raspberry___healthy",
+    "Soybean___healthy",
+    "Squash___Powdery_mildew",
+    "Strawberry___Leaf_scorch",
+    "Strawberry___healthy",
+    "Tomato___Bacterial_spot",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___Septoria_leaf_spot",
+    "Tomato___Spider_mites Two-spotted_spider_mite",
+    "Tomato___Target_Spot",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato___Tomato_mosaic_virus",
+    "Tomato___healthy"
+  ],
+  "num_classes": 39,
+  "val_acc": 0.9981069210964713,
+  "train_acc": 0.999879732203707,
+  "target_val_acc": 0.998,
+  "target_train_acc": 0.998,
+  "epochs_run": 25,
+  "android_copied": [
+    "/opt/jupyter/leafs/leafrust/android/app/src/main/assets/models/plantvillage_mobilenet.tflite",
+    "/opt/jupyter/leafs/leafrust/android/app/src/main/assets/models/labels.txt",
+    "/opt/jupyter/leafs/leafrust/android/app/src/main/assets/models/plantvillage_mobilenet.labels.json"
+  ],
+  "artifacts": {
+    "best.pt": {
+      "path": "/opt/jupyter/leafs/data/checkpoints/best.pt",
+      "bytes": 6355554,
+      "sha256": "f477aeadd9e75f7d1ca16432f85809a1b767a75021265c7c64f0267efa117bce"
+    },
+    "plantvillage_mobilenet.onnx": {
+      "path": "/opt/jupyter/leafs/data/exports/plantvillage_mobilenet.onnx",
+      "bytes": 6251833,
+      "sha256": "3254105b7de1656332aa3c2bd21a149f96b3e9af638e61583a01512b1d5851b6"
+    },
+    "plantvillage_mobilenet.tflite": {
+      "path": "/opt/jupyter/leafs/data/exports/plantvillage_mobilenet.tflite",
+      "bytes": 6276724,
+      "sha256": "d4a7077f4707e7048cb42226e12d7abb07ea4b0c033127f83b44fd845b453d34"
+    },
+    "labels.txt": {
+      "path": "/opt/jupyter/leafs/data/exports/labels.txt",
+      "bytes": 916,
+      "sha256": "67110cba33665c84e04b4e98645b652e2daec3c5946e269c656c87bd97aff66e"
+    },
+    "plantvillage_mobilenet.labels.json": {
+      "path": "/opt/jupyter/leafs/data/exports/plantvillage_mobilenet.labels.json",
+      "bytes": 1113,
+      "sha256": "0f3b394ade9dd17cf19b547085190ae66110bbef1c1b79df0f46b16940c16286"
+    },
+    "training_history.csv": {
+      "path": "/opt/jupyter/leafs/data/exports/training_history.csv",
+      "bytes": 2997,
+      "sha256": "1564a0a06cb233f446f6e775f0e8651c62bb5b90a7a36c30785eae6c1decea9b"
+    }
+  },
+  "smoke": "pytorch_gpu"
+}

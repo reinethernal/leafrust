@@ -22,6 +22,8 @@ leaf/
 
 Нужны **Android Studio Ladybug+**, JDK 17 и Android SDK.
 
+Кэши npm/Gradle/Android Studio на этом ПК лежат на **X:** (см. `scripts/use_x_devtools.ps1`). Android SDK: `X:\CODE\leaf\.build-tools\android-sdk`.
+
 1. (Опционально) пересобрать базу знаний:
    ```bash
    python scripts/build_plant_kb.py
@@ -56,13 +58,14 @@ cd android
   `https://reinethernal.github.io/leafrust/docs/models/`  
   (манифест `model_manifest.json` + `.tflite`). Кнопка **Ещё → Обновить модель**.
 
-Датасет и дообучение: [`scripts/DATASETS.md`](scripts/DATASETS.md)
+Датасет и дообучение (GPU): [`scripts/DATASETS.md`](scripts/DATASETS.md)
 
 ```bash
+cd X:\CODE\leaf
+.\.venv-gpu\Scripts\Activate.ps1
 cd scripts
-pip install -r requirements-train.txt
 python download_plantvillage.py --out ../data/plantvillage
-python train_mobilenet.py --data ../data/plantvillage --epochs 8 \
+python train_mobilenet_torch.py --data ../data/plantvillage \
   --out ../android/app/src/main/assets/models/plantvillage_mobilenet.tflite
 python publish_model.py
 git add docs/models android/app/src/main/assets/models && git commit -m "Update model" && git push

@@ -1,12 +1,13 @@
 {
-  "version": 1,
-  "versionName": "1.0.0",
+  "version": 2,
+  "versionName": "2026.08.12",
   "model": "plantvillage_mobilenet.tflite",
   "labels": "labels.txt",
-  "sha256": "b474111e96743f83427660313c1efd05520a0b6b647fcde5b4b4638d2a37b420",
-  "size": 11285824,
+  "sha256": "d4a7077f4707e7048cb42226e12d7abb07ea4b0c033127f83b44fd845b453d34",
+  "size": 6276724,
   "minAppVersionCode": 1,
-  "updatedAt": "2026-08-11T07:45:09.483901+00:00",
+  "updatedAt": "2026-08-12T06:00:00+00:00",
+  "valAcc": 0.9981,
   "urls": {
     "model": [
       "https://reinethernal.github.io/leafrust/docs/models/plantvillage_mobilenet.tflite",

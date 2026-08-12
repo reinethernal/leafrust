@@ -1,0 +1,9 @@
+# Hugging Face access token for LeafRust training notebooks / download_plantvillage.py
+#
+# 1. Copy this file next to the notebook:
+#      cp scripts/huggingface.token.example scripts/huggingface.token
+# 2. Create a token: https://huggingface.co/settings/tokens  (read access is enough)
+# 3. Replace the line below with your real token (starts with hf_...)
+# 4. Never commit scripts/huggingface.token (gitignored)
+#
+# HF_TOKEN=YOUR_HF_TOKEN_HERE

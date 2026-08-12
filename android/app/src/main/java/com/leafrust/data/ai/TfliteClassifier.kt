@@ -17,7 +17,11 @@ import kotlin.math.exp
  * Input: NCHW float32 [1,3,224,224] with ImageNet mean/std.
  * Output: 39 logits (softmax in post-process). Class 4 = Background.
  */
-class TfliteClassifier(context: Context, modelFile: java.io.File) : AutoCloseable {
+class TfliteClassifier(
+    context: Context,
+    modelFile: java.io.File,
+    labelsFile: java.io.File? = null,
+) : AutoCloseable {
 
     private val interpreter: Interpreter
     private val inputHeight: Int
@@ -54,9 +58,10 @@ class TfliteClassifier(context: Context, modelFile: java.io.File) : AutoCloseabl
         }
         outputSize = interpreter.getOutputTensor(0).shape().last()
 
-        val labelsFile = java.io.File(context.filesDir, "models/${ModelDownloader.LABELS_NAME}")
-        labels = if (labelsFile.exists()) {
-            labelsFile.readLines().map { it.trim() }.filter { it.isNotEmpty() }
+        val resolvedLabels = labelsFile
+            ?: java.io.File(context.filesDir, "models/${ModelDownloader.LABELS_NAME}")
+        labels = if (resolvedLabels.exists()) {
+            resolvedLabels.readLines().map { it.trim() }.filter { it.isNotEmpty() }
         } else {
             PlantLabels.englishIds
         }

@@ -30,37 +30,57 @@ data class AnalysisResult(
 
 class LeafAnalyzer(private val context: Context) {
     private val downloader = ModelDownloader(context)
+    private val modelPrefs = ModelPreferences(context)
     private val mutex = Mutex()
     private var classifier: TfliteClassifier? = null
     val knowledgeBase = PlantKnowledgeBase(context)
 
     val downloadState = downloader.state
+    val selectedModelId = modelPrefs.selectedModelId
+
+    fun availableModels(): List<ModelSpec> = ModelCatalog.load(context)
 
     suspend fun ensureModel(): Boolean {
-        AppLog.i("AI", "ensureModel start")
-        val ok = downloader.ensureModel(forceDownload = false)
+        val spec = modelPrefs.selectedSpec()
+        downloader.setActiveSpec(spec)
+        AppLog.i("AI", "ensureModel start id=${spec.id}")
+        val ok = downloader.ensureModel(spec = spec, forceDownload = false)
         if (ok) invalidateClassifier()
         AppLog.i(
             "AI",
             "ensureModel done ok=" + ok +
                 " ready=" + isModelReady() +
-                " bytes=" + downloader.modelFile().length(),
+                " bytes=" + downloader.modelFile(spec).length() +
+                " id=" + spec.id,
         )
         return ok
     }
 
     suspend fun downloadModel(): Boolean {
-        AppLog.i("AI", "force download start")
-        val ok = downloader.ensureModel(forceDownload = true)
+        val spec = modelPrefs.selectedSpec()
+        downloader.setActiveSpec(spec)
+        AppLog.i("AI", "force download start id=${spec.id}")
+        val ok = downloader.ensureModel(spec = spec, forceDownload = true)
         if (ok) invalidateClassifier()
         AppLog.i(
             "AI",
-            "force download done ok=" + ok + " bytes=" + downloader.modelFile().length(),
+            "force download done ok=" + ok + " bytes=" + downloader.modelFile(spec).length(),
         )
         return ok
     }
 
+    suspend fun selectModel(id: String): Boolean {
+        AppLog.i("AI", "selectModel id=$id")
+        modelPrefs.setSelectedModelId(id)
+        val spec = ModelCatalog.byId(context, id)
+        downloader.setActiveSpec(spec)
+        invalidateClassifier()
+        return ensureModel()
+    }
+
     fun isModelReady() = downloader.isModelReady()
+
+    fun activeModelTitle(): String = downloader.activeSpec().titleRu
 
     fun invalidateClassifier() {
         classifier?.close()
@@ -234,9 +254,9 @@ class LeafAnalyzer(private val context: Context) {
             return null
         }
         return try {
-            TfliteClassifier(context, file).also {
+            TfliteClassifier(context, file, downloader.labelsFile()).also {
                 classifier = it
-                AppLog.i("AI", "classifier ready " + it.debugInfo)
+                AppLog.i("AI", "classifier ready " + it.debugInfo + " model=" + downloader.activeSpec().id)
             }
         } catch (e: Exception) {
             AppLog.e("AI", "classifier load failed", e)

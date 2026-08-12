@@ -27,97 +27,124 @@ sealed class ModelDownloadState {
 }
 
 /**
- * Bundled assets first; updates from the LeafRust GitHub Pages CDN
- * (`docs/models/model_manifest.json`). Falls back to PlantAi mirrors.
+ * Bundled assets first; updates from LeafRust GitHub Pages CDN per [ModelSpec].
  */
 class ModelDownloader(private val context: Context) {
 
     private val _state = MutableStateFlow<ModelDownloadState>(ModelDownloadState.Idle)
     val state: StateFlow<ModelDownloadState> = _state.asStateFlow()
 
-    fun modelFile(): File = File(context.filesDir, "models/$MODEL_NAME")
-    fun labelsFile(): File = File(context.filesDir, "models/$LABELS_NAME")
-    private fun versionFile(): File = File(context.filesDir, "models/version.txt")
-    private fun shaFile(): File = File(context.filesDir, "models/sha256.txt")
+    private var active: ModelSpec = ModelCatalog.byId(context, ModelCatalog.defaultId(context))
 
-    fun isModelReady(): Boolean {
-        val model = modelFile()
-        return model.exists() && model.length() > MIN_MODEL_BYTES
+    fun activeSpec(): ModelSpec = active
+
+    fun setActiveSpec(spec: ModelSpec) {
+        active = spec
     }
 
-    fun localModelVersion(): Int =
-        versionFile().takeIf { it.exists() }?.readText()?.trim()?.toIntOrNull() ?: 0
+    fun modelFile(spec: ModelSpec = active): File = File(context.filesDir, "models/${spec.storageModel}")
+    fun labelsFile(spec: ModelSpec = active): File = File(context.filesDir, "models/${spec.storageLabels}")
+    private fun versionFile(spec: ModelSpec = active): File = File(context.filesDir, "models/${spec.versionFile}")
+    private fun shaFile(spec: ModelSpec = active): File = File(context.filesDir, "models/${spec.shaFile}")
+
+    fun isModelReady(spec: ModelSpec = active): Boolean {
+        val model = modelFile(spec)
+        return model.exists() && model.length() > spec.minBytes
+    }
+
+    fun localModelVersion(spec: ModelSpec = active): Int =
+        versionFile(spec).takeIf { it.exists() }?.readText()?.trim()?.toIntOrNull() ?: 0
 
     /**
      * Uses the model bundled in the APK assets first (offline-ready).
-     * Checks LeafRust CDN for a newer manifest version.
+     * Checks CDN for a newer manifest version.
      * [forceDownload] always pulls from the network (Settings → Обновить модель).
      */
-    suspend fun ensureModel(forceDownload: Boolean = false): Boolean = withContext(Dispatchers.IO) {
+    suspend fun ensureModel(
+        spec: ModelSpec = active,
+        forceDownload: Boolean = false,
+    ): Boolean = withContext(Dispatchers.IO) {
+        active = spec
         _state.value = ModelDownloadState.Checking
         val dir = File(context.filesDir, "models")
         if (!dir.exists()) dir.mkdirs()
 
         if (!forceDownload) {
-            copyAssetIfPresent("models/$MODEL_NAME", modelFile())
-            copyAssetIfPresent("models/$LABELS_NAME", labelsFile())
+            spec.assetModel?.let { copyAssetIfPresent(it, modelFile(spec)) }
+            spec.assetLabels?.let { copyAssetIfPresent(it, labelsFile(spec)) }
+            // Migrate old single-file layout for v2
+            migrateLegacyIfNeeded(spec)
         }
 
-        val remote = fetchManifest()
+        val remote = fetchManifest(spec)
         val needUpdate = forceDownload ||
-            !isModelReady() ||
-            (remote != null && remote.version > localModelVersion()) ||
-            (remote != null && remote.sha256.isNotBlank() && remote.sha256 != localSha())
+            !isModelReady(spec) ||
+            (remote != null && remote.version > localModelVersion(spec)) ||
+            (remote != null && remote.sha256.isNotBlank() && remote.sha256 != localSha(spec))
 
         if (needUpdate && remote != null) {
-            if (downloadFromManifest(remote)) {
-                ensureLabels()
+            if (downloadFromManifest(spec, remote)) {
+                ensureLabels(spec)
                 _state.value = ModelDownloadState.Ready
                 return@withContext true
             }
         }
 
-        if (!forceDownload && isModelReady()) {
-            ensureLabels()
-            // Keep version at 0 until a CDN sync succeeds, so the first online
-            // launch still pulls the published weights when they differ.
-            if (!shaFile().exists() && modelFile().exists()) {
-                shaFile().writeText(sha256(modelFile()))
+        if (!forceDownload && isModelReady(spec)) {
+            ensureLabels(spec)
+            if (!shaFile(spec).exists() && modelFile(spec).exists()) {
+                shaFile(spec).writeText(sha256(modelFile(spec)))
             }
             _state.value = ModelDownloadState.Ready
             return@withContext true
         }
 
-        val downloaded = downloadWithMirrors(modelFile(), MODEL_URLS)
+        val urls = (spec.modelUrls + DEFAULT_MODEL_URLS).distinct()
+        val downloaded = downloadWithMirrors(modelFile(spec), urls, minBytes = spec.minBytes)
         if (downloaded) {
-            downloadWithMirrors(labelsFile(), LABELS_URLS) || writeDefaultLabels(labelsFile())
+            downloadWithMirrors(labelsFile(spec), spec.labelUrls.ifEmpty { DEFAULT_LABEL_URLS }, minBytes = 32) ||
+                writeDefaultLabels(labelsFile(spec))
         }
 
-        if (isModelReady()) {
-            ensureLabels()
-            versionFile().writeText((remote?.version ?: 1).toString())
-            remote?.sha256?.takeIf { it.isNotBlank() }?.let { shaFile().writeText(it) }
-            File(dir, ".downloaded").writeText(System.currentTimeMillis().toString())
+        if (isModelReady(spec)) {
+            ensureLabels(spec)
+            versionFile(spec).writeText((remote?.version ?: 1).toString())
+            remote?.sha256?.takeIf { it.isNotBlank() }?.let { shaFile(spec).writeText(it) }
+            File(dir, ".downloaded_${spec.id}").writeText(System.currentTimeMillis().toString())
             _state.value = ModelDownloadState.Ready
             return@withContext true
         }
 
-        copyAssetIfPresent("models/$MODEL_NAME", modelFile())
-        copyAssetIfPresent("models/$LABELS_NAME", labelsFile())
-        if (isModelReady()) {
-            ensureLabels()
+        spec.assetModel?.let { copyAssetIfPresent(it, modelFile(spec)) }
+        spec.assetLabels?.let { copyAssetIfPresent(it, labelsFile(spec)) }
+        if (isModelReady(spec)) {
+            ensureLabels(spec)
             _state.value = ModelDownloadState.Ready
             return@withContext true
         }
 
-        _state.value = ModelDownloadState.Failed("Не удалось получить модель. Будет демо-режим.")
+        _state.value = ModelDownloadState.Failed("Не удалось получить модель «${spec.titleRu}».")
         false
     }
 
-    private fun localSha(): String {
-        val stored = shaFile().takeIf { it.exists() }?.readText()?.trim().orEmpty()
+    private fun migrateLegacyIfNeeded(spec: ModelSpec) {
+        if (spec.id != "plantvillage_v2") return
+        val dest = modelFile(spec)
+        if (dest.exists() && dest.length() > spec.minBytes) return
+        val legacy = File(context.filesDir, "models/$MODEL_NAME")
+        if (legacy.exists() && legacy.length() > spec.minBytes) {
+            legacy.copyTo(dest, overwrite = true)
+            val legacyLabels = File(context.filesDir, "models/$LABELS_NAME")
+            if (legacyLabels.exists()) {
+                legacyLabels.copyTo(labelsFile(spec), overwrite = true)
+            }
+        }
+    }
+
+    private fun localSha(spec: ModelSpec): String {
+        val stored = shaFile(spec).takeIf { it.exists() }?.readText()?.trim().orEmpty()
         if (stored.isNotBlank()) return stored
-        return if (modelFile().exists()) sha256(modelFile()) else ""
+        return if (modelFile(spec).exists()) sha256(modelFile(spec)) else ""
     }
 
     private data class Manifest(
@@ -128,25 +155,26 @@ class ModelDownloader(private val context: Context) {
         val labelUrls: List<String>,
     )
 
-    private fun fetchManifest(): Manifest? {
-        for (url in MANIFEST_URLS) {
+    private fun fetchManifest(spec: ModelSpec): Manifest? {
+        val urls = spec.manifestUrls.ifEmpty { MANIFEST_URLS }
+        for (url in urls) {
             try {
                 val text = httpGetString(url) ?: continue
                 val json = JSONObject(text)
                 val version = json.optInt("version", 0)
                 val sha = json.optString("sha256", "")
                 val size = json.optLong("size", -1L)
-                val urls = json.optJSONObject("urls")
-                val modelUrls = urls?.optJSONArray("model").toStringList()
-                    .ifEmpty { DEFAULT_MODEL_URLS }
-                val labelUrls = urls?.optJSONArray("labels").toStringList()
-                    .ifEmpty { DEFAULT_LABEL_URLS }
+                val urlsObj = json.optJSONObject("urls")
+                val modelUrls = urlsObj?.optJSONArray("model").toStringList()
+                    .ifEmpty { spec.modelUrls }
+                val labelUrls = urlsObj?.optJSONArray("labels").toStringList()
+                    .ifEmpty { spec.labelUrls }
                 return Manifest(
                     version = version,
                     sha256 = sha,
                     size = size,
-                    modelUrls = (modelUrls + DEFAULT_MODEL_URLS).distinct(),
-                    labelUrls = (labelUrls + DEFAULT_LABEL_URLS).distinct(),
+                    modelUrls = (modelUrls + spec.modelUrls).distinct(),
+                    labelUrls = (labelUrls + spec.labelUrls).distinct(),
                 )
             } catch (_: Exception) {
                 // try next
@@ -164,24 +192,32 @@ class ModelDownloader(private val context: Context) {
         }
     }
 
-    private fun downloadFromManifest(manifest: Manifest): Boolean {
+    private fun downloadFromManifest(spec: ModelSpec, manifest: Manifest): Boolean {
         val okModel = downloadWithMirrors(
-            dest = modelFile(),
-            urls = manifest.modelUrls.ifEmpty { DEFAULT_MODEL_URLS },
+            dest = modelFile(spec),
+            urls = manifest.modelUrls.ifEmpty { spec.modelUrls },
             expectedSha = manifest.sha256,
             expectedSize = manifest.size,
+            minBytes = spec.minBytes,
         )
         if (!okModel) return false
-        downloadWithMirrors(labelsFile(), manifest.labelUrls) || writeDefaultLabels(labelsFile())
-        versionFile().writeText(manifest.version.toString())
-        if (manifest.sha256.isNotBlank()) shaFile().writeText(manifest.sha256)
-        File(context.filesDir, "models/.downloaded").writeText(System.currentTimeMillis().toString())
-        return isModelReady()
+        downloadWithMirrors(
+            labelsFile(spec),
+            manifest.labelUrls.ifEmpty { spec.labelUrls },
+            minBytes = 32,
+        ) || writeDefaultLabels(labelsFile(spec))
+        versionFile(spec).writeText(manifest.version.toString())
+        if (manifest.sha256.isNotBlank()) shaFile(spec).writeText(manifest.sha256)
+        File(context.filesDir, "models/.downloaded_${spec.id}").writeText(System.currentTimeMillis().toString())
+        return isModelReady(spec)
     }
 
-    private fun ensureLabels() {
-        if (!labelsFile().exists() || labelsFile().length() < 32) {
-            writeDefaultLabels(labelsFile())
+    private fun ensureLabels(spec: ModelSpec) {
+        if (!labelsFile(spec).exists() || labelsFile(spec).length() < 32) {
+            spec.assetLabels?.let { copyAssetIfPresent(it, labelsFile(spec)) }
+            if (!labelsFile(spec).exists() || labelsFile(spec).length() < 32) {
+                writeDefaultLabels(labelsFile(spec))
+            }
         }
     }
 
@@ -202,10 +238,11 @@ class ModelDownloader(private val context: Context) {
         urls: List<String>,
         expectedSha: String = "",
         expectedSize: Long = -1L,
+        minBytes: Long = MIN_MODEL_BYTES,
     ): Boolean {
         for (url in urls) {
             try {
-                if (downloadFile(url, dest, expectedSize)) {
+                if (downloadFile(url, dest, expectedSize, minBytes)) {
                     if (expectedSha.isNotBlank()) {
                         val got = sha256(dest)
                         if (!got.equals(expectedSha, ignoreCase = true)) {
@@ -222,12 +259,13 @@ class ModelDownloader(private val context: Context) {
         return false
     }
 
-    private fun downloadFile(urlString: String, dest: File, expectedSize: Long = -1L): Boolean {
-        val fallbackTotal = when {
-            expectedSize > 0 -> expectedSize
-            dest.name.endsWith(".tflite") -> EXPECTED_MODEL_BYTES
-            else -> -1L
-        }
+    private fun downloadFile(
+        urlString: String,
+        dest: File,
+        expectedSize: Long = -1L,
+        minBytes: Long = MIN_MODEL_BYTES,
+    ): Boolean {
+        val fallbackTotal = expectedSize.takeIf { it > 0 } ?: -1L
         _state.value = ModelDownloadState.Downloading(0f, 0L, fallbackTotal)
         val tmp = File(dest.absolutePath + ".part")
         if (tmp.exists()) tmp.delete()
@@ -271,7 +309,7 @@ class ModelDownloader(private val context: Context) {
         }
         connection.disconnect()
 
-        if (tmp.length() < MIN_MODEL_BYTES && dest.name.endsWith(".tflite")) {
+        if (dest.name.endsWith(".tflite") && tmp.length() < minBytes) {
             tmp.delete()
             return false
         }
@@ -329,7 +367,6 @@ class ModelDownloader(private val context: Context) {
         const val MODEL_NAME = "plantvillage_mobilenet.tflite"
         const val LABELS_NAME = "labels.txt"
         private const val MIN_MODEL_BYTES = 1_000_000L
-        private const val EXPECTED_MODEL_BYTES = 11_285_824L
 
         val MANIFEST_URLS = listOf(
             "https://reinethernal.github.io/leafrust/docs/models/model_manifest.json",
@@ -345,11 +382,5 @@ class ModelDownloader(private val context: Context) {
             "https://reinethernal.github.io/leafrust/docs/models/labels.txt",
             "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/labels.txt",
         )
-
-        val MODEL_URLS = DEFAULT_MODEL_URLS + listOf(
-            "https://raw.githubusercontent.com/Nishant1998/PlantAi/master/model/model.tflite",
-        )
-
-        val LABELS_URLS = DEFAULT_LABEL_URLS
     }
 }

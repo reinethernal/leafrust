@@ -1,0 +1,14 @@
+# GPU fine-tuning on Windows (RTX). Native TF pip wheels have no CUDA on Windows.
+torch
+torchvision
+torchaudio
+numpy>=1.24
+pillow>=10.0
+huggingface_hub>=0.20
+onnx>=1.15
+onnxscript>=0.1.0
+# optional TFLite conversion (uses CPU TF only for converter)
+tensorflow>=2.15,<2.17
+onnx2tf>=1.22
+sng4onnx>=1.0
+onnxruntime>=1.17

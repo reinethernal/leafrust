@@ -1,0 +1,54 @@
+{
+  "defaultModelId": "plantvillage_v2",
+  "models": [
+    {
+      "id": "plantvillage_v2",
+      "titleRu": "PlantVillage MobileNet (авг 2026)",
+      "subtitleRu": "39 классов · val ≈ 99.8% · ~6 МБ",
+      "assetModel": "models/plantvillage_mobilenet.tflite",
+      "assetLabels": "models/labels.txt",
+      "storageModel": "plantvillage_v2.tflite",
+      "storageLabels": "plantvillage_v2_labels.txt",
+      "versionFile": "plantvillage_v2_version.txt",
+      "shaFile": "plantvillage_v2_sha256.txt",
+      "minBytes": 1000000,
+      "manifestUrls": [
+        "https://reinethernal.github.io/leafrust/docs/models/model_manifest.json",
+        "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/model_manifest.json"
+      ],
+      "modelUrls": [
+        "https://reinethernal.github.io/leafrust/docs/models/plantvillage_mobilenet.tflite",
+        "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/plantvillage_mobilenet.tflite"
+      ],
+      "labelUrls": [
+        "https://reinethernal.github.io/leafrust/docs/models/labels.txt",
+        "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/labels.txt"
+      ]
+    },
+    {
+      "id": "plantvillage_v1",
+      "titleRu": "PlantVillage MobileNet (предыдущая)",
+      "subtitleRu": "39 классов · FP32 · ~11 МБ",
+      "assetModel": null,
+      "assetLabels": "models/labels.txt",
+      "storageModel": "plantvillage_v1.tflite",
+      "storageLabels": "plantvillage_v1_labels.txt",
+      "versionFile": "plantvillage_v1_version.txt",
+      "shaFile": "plantvillage_v1_sha256.txt",
+      "minBytes": 1000000,
+      "manifestUrls": [
+        "https://reinethernal.github.io/leafrust/docs/models/model_manifest_v1.json",
+        "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/model_manifest_v1.json"
+      ],
+      "modelUrls": [
+        "https://reinethernal.github.io/leafrust/docs/models/plantvillage_mobilenet_v1.tflite",
+        "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/plantvillage_mobilenet_v1.tflite"
+      ],
+      "labelUrls": [
+        "https://reinethernal.github.io/leafrust/docs/models/labels_v1.txt",
+        "https://raw.githubusercontent.com/reinethernal/leafrust/main/docs/models/labels_v1.txt",
+        "https://reinethernal.github.io/leafrust/docs/models/labels.txt"
+      ]
+    }
+  ]
+}

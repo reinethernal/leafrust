@@ -13,12 +13,17 @@
 
 ### Скачать и разложить под обучение (в этом репо)
 
+`load_dataset("mohanty/PlantVillage")` отдаёт только пути — картинки в **`data.zip` (~2.1 GB)** на Hugging Face.
+
 ```bash
 cd scripts
 pip install -r requirements-train.txt
 python download_plantvillage.py --out ../data/plantvillage
-# опционально быстрее:  --max-per-class 200
+# быстрее для проверки:
+python download_plantvillage.py --out ../data/plantvillage_small --max-per-class 50
 ```
+
+Архив скачивается один раз в `data/plantvillage_cache/` (повторный запуск использует кэш).
 
 Структура на выходе — ImageFolder:
 
@@ -30,17 +35,51 @@ data/plantvillage/
   ...
 ```
 
-### Обучить / дообучить
+### Обучить / дообучить (GPU, NVIDIA)
+
+Пакеты и кэши Python перенесены на **X:** (junctions с C:). В новой сессии:
+
+```powershell
+. X:\CODE\leaf\scripts\use_x_python.ps1
+```
+
+### Jupyter на удалённом GPU-сервере
+
+Ноутбук: `scripts/train_mobilenet.ipynb` — пути через cwd / `LEAFRUST_ROOT`, результат в `data/exports/`.
 
 ```bash
-# с нуля (голова на ImageNet-backbone)
-python train_mobilenet.py --data ../data/plantvillage --epochs 8 \
-  --out ../android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+cd leafrust && source .venv-gpu/bin/activate
+jupyter lab --ip 0.0.0.0 --port 8888 --no-browser
+# затем scp data/exports/plantvillage_mobilenet.tflite labels.txt → android/.../assets/models/
+```
 
-# дообучение (разморозка верхних слоёв)
-python train_mobilenet.py --data ../data/plantvillage --epochs 6 --finetune \
-  --checkpoint ../data/checkpoints/best.keras \
+На Windows официальный TensorFlow **без CUDA**. Для RTX 3060 Ti локально:
+
+```powershell
+cd X:\CODE\leaf
+.\.venv-gpu\Scripts\Activate.ps1
+cd scripts
+python train_mobilenet_torch.py --data ../data/plantvillage `
   --out ../android/app/src/main/assets/models/plantvillage_mobilenet.tflite
+```
+
+По умолчанию (GPU, batch=64 + AMP):
+1. **head** — только классификатор (backbone ImageNet заморожен)
+2. **finetune** — разморозка последних блоков MobileNetV3 → ONNX → TFLite
+
+Если не хватает VRAM:
+
+```powershell
+python train_mobilenet_torch.py --data ../data/plantvillage --batch 32
+```
+
+Установка venv с нуля (уже сделано на диске X:):
+
+```powershell
+python -m venv .venv-gpu
+.\.venv-gpu\Scripts\Activate.ps1
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+pip install -r requirements-train-gpu.txt
 ```
 
 ### Опубликовать модель в CDN репозитория
