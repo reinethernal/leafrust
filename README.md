@@ -39,6 +39,11 @@ cd android
 # APK: app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### CI (GitHub Actions)
+
+- Push/PR в `main` с изменениями в `android/` → workflow **Android CI** собирает debug APK (артефакт `leafrust-debug` на странице run).
+- Тег `v*` или ручной запуск → **F-Droid third-party repo** (signed release + Pages).
+
 ## База знаний
 
 Файл `android/app/src/main/assets/kb/plants_diseases.sqlite` содержит:
